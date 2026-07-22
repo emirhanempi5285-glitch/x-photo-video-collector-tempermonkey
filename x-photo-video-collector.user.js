@@ -1030,9 +1030,9 @@
 
   // 2) scrollHeight 収束＋scrollIntoView フォールバック
   async function autoScrollToEnd(scroller, onProgress) {
-    const MAX_IDLE = 3;          // 高さ/件数が増えないラウンドが続いたら終端
+    const MAX_IDLE = 5;          // 高さ/件数が増えないラウンドが続いたら終端
     const MAX_TIME = 120_000;    // 120秒の安全タイムアウト
-    const WAITS = [250, 350, 500, 700, 900, 1200, 1600, 2000];
+    const WAITS = [600, 800, 1000, 1500, 2000, 2500, 3000];
 
     // 開始時なるべくトップへ
     if (scroller === window) scrollTo({ top: 0, behavior: 'auto' });
@@ -1049,9 +1049,14 @@
     while (!stopFlag && idle < MAX_IDLE && (performance.now() - t0) < MAX_TIME) {
       const before = getScrollMetrics(scroller);
 
-      // メイン手段：コンテナの最下部へ
-      if (scroller === window) scrollTo({ top: before.scrollHeight, behavior: 'auto' });
-      else scroller.scrollTop = before.scrollHeight;
+      // メイン手段：コンテナの最下部へ + scroll イベント発火で無限スクロールを起動
+      if (scroller === window) {
+        scrollTo({ top: before.scrollHeight, behavior: 'auto' });
+        window.dispatchEvent(new Event('scroll', { bubbles: true }));
+      } else {
+        scroller.scrollTop = before.scrollHeight;
+        try { scroller.dispatchEvent(new Event('scroll', { bubbles: true })); } catch { /* noop */ }
+      }
 
       // フォールバック：グリッド最下段のメディアを scrollIntoView で押し込む
       const lastCard = findLastTweetCard();
