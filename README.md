@@ -94,6 +94,7 @@ Tampermonkey 向けに開発された、X（旧 Twitter）のプロフィール�
   - フェッチ結果が `JavaScriptを使用できません。` のプレースホルダだった場合は、該当ツイート詳細を新しいアクティブタブで開いて DOM から再解析
   - `<img>` の `src`、`background-image`、および `<video>/<source>` の `src` を抽出
   - 動画 URL を DOM から確定できない場合は `TweetResultByRestId` API の `video_info.variants` から MP4 を補完
+  - 複数画像ツイートで DOM から一部の画像しか取得できない場合（遅延ロードにより全画像が含まれないケース）は、同じ GraphQL API フォールバックで全画像を補完
   - 画像は `?name=orig`、`format` パラメータで正規化、動画は `.mp4` のみ対象
   - ツイート内での順序・種別をメタ情報として保持
   - 次のツイートへ進む前に既定で 10 秒待機し、パネルの設定値で変更可能

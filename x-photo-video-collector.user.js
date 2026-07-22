@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         X Photo Video Collector
 // @namespace    https://github.com/japan4415/x-photo-video-collector-tempermonkey
-// @version      0.5.3
+// @version      0.5.4
 // @description  Collect media post URLs and direct image/mp4 links from X profile media tabs.
 // @match        https://x.com/*
 // @run-at       document-idle
@@ -1166,7 +1166,8 @@
   }
 
   function analyzeMediaHints(card) {
-    const hasPhoto = !!(card.querySelector('a[href*="/photo/"]') || card.querySelector('img[src*="pbs.twimg.com/"]'));
+    const photoLinks = card.querySelectorAll('a[href*="/photo/"]');
+    const hasPhoto = !!(photoLinks.length || card.querySelector('img[src*="pbs.twimg.com/"]'));
     const hasVideo = !!(card.querySelector('a[href*="/video/"]') || card.querySelector('video, source[src*="video.twimg.com"]'));
     const iconPath = card.querySelector('a[href*="/status/"] svg path');
     const pathD = iconPath?.getAttribute('d') || '';
@@ -1175,7 +1176,8 @@
       hasMedia: hasPhoto || hasVideo,
       hasPhoto,
       hasVideo,
-      isMulti
+      isMulti,
+      photoCount: photoLinks.length
     };
   }
 
@@ -1193,7 +1195,11 @@
     const tryApiFallback = async (items, reason) => {
       const currentItems = Array.isArray(items) ? items : [];
       const hasVideo = currentItems.some(item => item?.type === 'mp4');
-      const shouldFetchApi = currentItems.length === 0 || (tweet?.hints?.hasVideo && !hasVideo);
+      const imgCount = currentItems.filter(item => item?.type === 'img').length;
+      const expectedPhotos = tweet?.hints?.photoCount ?? 0;
+      const shouldFetchApi = currentItems.length === 0
+        || (tweet?.hints?.hasVideo && !hasVideo)
+        || (expectedPhotos > 1 && imgCount < expectedPhotos);
       if (!shouldFetchApi) return currentItems;
       const apiItems = await fetchTweetMediaViaApi(tweet);
       if (!apiItems.length) return currentItems;
