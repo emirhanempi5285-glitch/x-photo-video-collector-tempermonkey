@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         X Photo Video Collector
 // @namespace    https://github.com/japan4415/x-photo-video-collector-tempermonkey
-// @version      0.5.4
+// @version      0.5.5
 // @description  Collect media post URLs and direct image/mp4 links from X profile media tabs.
 // @match        https://x.com/*
 // @run-at       document-idle
@@ -1199,7 +1199,8 @@
       const expectedPhotos = tweet?.hints?.photoCount ?? 0;
       const shouldFetchApi = currentItems.length === 0
         || (tweet?.hints?.hasVideo && !hasVideo)
-        || (expectedPhotos > 1 && imgCount < expectedPhotos);
+        || (expectedPhotos > 1 && imgCount < expectedPhotos)
+        || !!tweet?.hints?.isMulti;
       if (!shouldFetchApi) return currentItems;
       const apiItems = await fetchTweetMediaViaApi(tweet);
       if (!apiItems.length) return currentItems;
